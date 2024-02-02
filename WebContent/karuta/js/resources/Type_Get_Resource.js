@@ -106,6 +106,8 @@ UIFactory["Get_Resource"] = function(node,condition)
 	this.multilingual = ($("metadata",node).attr('multilingual-resource')=='Y') ? true : false;
 	//--------------------
 	this.preview = ($("metadata",node).attr('preview')=='Y') ? true : false;
+	this.previewsharing = ($("metadata",node).attr('previewsharing')==undefined)? 'x': $("metadata",node).attr('previewsharing');
+
 };
 
 //==================================
@@ -312,8 +314,16 @@ UIFactory["Get_Resource"].prototype.getView = function(dest,type,langcode,indash
 		}
 		if (code.indexOf("&")>-1)
 			html += " ["+$(this.value_node).text()+ "] ";
-		if (this.preview)
-			html+= "&nbsp;<span class='button preview-button fas fa-binoculars' onclick=\"previewPage('"+resid+"',100,'standard') \" data-title='"+karutaStr[LANG]["preview"]+"' data-toggle='tooltip' data-placement='bottom'></span>";
+		if (this.preview){
+			let js = "previewPage('"+resid+"',100,'standard')";
+			if (this.previewsharing!=""){
+				options = this.previewsharing.split(",");
+				//-------------------------------------------sharerole,level,duration,role
+				const previewURL = getPreviewSharedURL(resid,options[0],options[1],options[2],options[3])
+				js = "previewPage('"+previewURL+"',100,'previewURL',null,true)";
+			}
+			html+= "&nbsp;<span class='button preview-button fas fa-binoculars' onclick=\" "+ js +" \" data-title='"+karutaStr[LANG]["preview"]+"' data-toggle='tooltip' data-placement='bottom'></span>";
+		}
 		if (indashboard)
 			html += "</span>";
 		else
@@ -350,8 +360,18 @@ UIFactory["Get_Resource"].prototype.getView = function(dest,type,langcode,indash
 			}
 			if (code.indexOf("&")>-1)
 				html += " ["+$(this.value_node).text()+ "] ";
-			if (this.preview)
-				html+= "&nbsp;<span class='button preview-button fas fa-binoculars' onclick=\"previewPage('"+this.uuid_node.text()+"',100,'standard') \" data-title='"+karutaStr[LANG]["preview"]+"' data-toggle='tooltip' data-placement='bottom'></span>";
+			if (this.preview){
+				let js = "previewPage('"+this.uuid_node.text()+"',100,'standard')";
+				if (this.previewsharing!=""){
+					options = this.previewsharing.split(",");
+					if (g_userroles[0]==options[3]){
+						//-------------------------------------------sharerole,level,duration,role
+						const previewURL = getPreviewSharedURL(this.uuid_node.text(),options[0],options[1],options[2],options[3])
+						js = "previewPage('"+previewURL+"',100,'previewURL',null,true)";
+					}
+				}
+				html+= "&nbsp;<span class='button preview-button fas fa-binoculars' onclick=\" "+ js +" \" data-title='"+karutaStr[LANG]["preview"]+"' data-toggle='tooltip' data-placement='bottom'></span>";
+			}
 			if (indashboard)
 				html += "</span>";
 			else
